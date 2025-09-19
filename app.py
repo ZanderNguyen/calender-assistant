@@ -1,5 +1,11 @@
+import os
+from dotenv import load_dotenv
 from flask import Flask, render_template, request
-from utils.gemini import parse_prompt  # 👈 Import your parser
+from utils.gemini import parse_prompt  # 👈 Your real Gemini parser
+
+# Load environment variables
+load_dotenv()
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 
 app = Flask(__name__)
 
@@ -10,15 +16,26 @@ def home():
 @app.route('/schedule', methods=['POST'])
 def schedule():
     prompt = request.form['prompt']
-    parsed = parse_prompt(prompt)
+    
+    try:
+        parsed = parse_prompt(prompt)
+        summary = parsed.get('summary', 'No summary provided')
+        start = parsed.get('start_time', 'Unknown start time')
+        end = parsed.get('end_time', 'Unknown end time')
 
-    # Show parsed output for now
-    return f"""
-        <h3>Parsed Prompt:</h3>
-        <p><strong>Summary:</strong> {parsed['summary']}</p>
-        <p><strong>Start:</strong> {parsed['start_time']}</p>
-        <p><strong>End:</strong> {parsed['end_time']}</p>
-    """
+        return f"""
+            <h3>Parsed Prompt:</h3>
+            <p><strong>Summary:</strong> {summary}</p>
+            <p><strong>Start:</strong> {start}</p>
+            <p><strong>End:</strong> {end}</p>
+            <a href="/">Back</a>
+        """
+    except Exception as e:
+        return f"""
+            <h3>Error Parsing Prompt</h3>
+            <p>{str(e)}</p>
+            <a href="/">Try Again</a>
+        """
 
 if __name__ == '__main__':
     app.run(debug=True)
