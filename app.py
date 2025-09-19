@@ -6,6 +6,8 @@ from flask import redirect, session, url_for
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
+from datetime import datetime
+
 
 app = Flask(__name__)
 
@@ -24,10 +26,12 @@ def home():
 
 @app.route('/schedule', methods=['POST'])
 def schedule():
-    prompt = request.form['prompt']
+    user_prompt = request.form['prompt']
+    today = datetime.now().strftime("%A, %d %B %Y")  # e.g., "Friday, 19 September 2025"
+    contextual_prompt = f"Today is {today}. {user_prompt}"
+    parsed = parse_prompt(contextual_prompt)
 
     try:
-        parsed = parse_prompt(prompt)
         summary = parsed.get('summary', 'No summary provided')
         start = parsed.get('start_time')
         end = parsed.get('end_time')
