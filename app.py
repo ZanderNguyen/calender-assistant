@@ -27,14 +27,20 @@ def home():
 @app.route('/schedule', methods=['POST'])
 def schedule():
     user_prompt = request.form['prompt']
-    today = datetime.now().strftime("%A, %d %B %Y")  # e.g., "Friday, 19 September 2025"
-    contextual_prompt = f"Today is {today}. {user_prompt}"
-    parsed = parse_prompt(contextual_prompt)
+    now = datetime.now()
+    today = now.strftime("%A, %d %B %Y")
+    current_time = now.strftime("%H:%M")
+
+    contextual_prompt = (
+        f"Today is {today}, and the current time is {current_time}. "
+        f"Please extract all events from the following prompt with accurate start and end times in ISO 8601 format. "
+        f"{user_prompt}"
+    )
+
+
 
     try:
-        summary = parsed.get('summary', 'No summary provided')
-        start = parsed.get('start_time')
-        end = parsed.get('end_time')
+        events = parse_prompt(contextual_prompt)
 
         # Check for OAuth credentials
         creds_data = session.get("credentials")
@@ -44,22 +50,33 @@ def schedule():
         creds = Credentials(**creds_data)
         service = build("calendar", "v3", credentials=creds)
 
-        event = {
-            "summary": summary,
-            "start": {"dateTime": start, "timeZone": "Pacific/Auckland"},
-            "end": {"dateTime": end, "timeZone": "Pacific/Auckland"},
-        }
+        results = []
 
-        created_event = service.events().insert(calendarId="primary", body=event).execute()
+        for event_data in events:
+            summary = event_data.get('summary', 'No summary provided')
+            start = event_data.get('start_time')
+            end = event_data.get('end_time')
+
+            event = {
+                "summary": summary,
+                "start": {"dateTime": start, "timeZone": "Pacific/Auckland"},
+                "end": {"dateTime": end, "timeZone": "Pacific/Auckland"},
+            }
+
+            created_event = service.events().insert(calendarId="primary", body=event).execute()
+            results.append(f"""
+                <p><strong>{summary}</strong><br>
+                {start} → {end}<br>
+                <a href="{created_event.get('htmlLink')}" target="_blank">View in Calendar</a></p>
+            """)
+
 
         return f"""
-            <h3>Event Created!</h3>
-            <p><strong>Summary:</strong> {summary}</p>
-            <p><strong>Start:</strong> {start}</p>
-            <p><strong>End:</strong> {end}</p>
-            <p><a href="{created_event.get('htmlLink')}" target="_blank">View in Google Calendar</a></p>
+            <h3>Events Created!</h3>
+            {''.join(results)}
             <a href="/">Back</a>
         """
+
 
     except Exception as e:
         return f"""
