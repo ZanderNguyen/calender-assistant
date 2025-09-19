@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 .DS_Store
 booming-key-472600-q7-fe17c32ce34a.json
+client_secret.json

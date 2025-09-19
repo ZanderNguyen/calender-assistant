@@ -77,6 +77,6 @@ def parse_prompt(prompt):
 
     return {
         "summary": prompt,
-        "start_time": "2025-09-20T13:00:00Z",
-        "end_time": "2025-09-20T14:00:00Z"
+        "start_time": "wallawa",
+        "end_time": "something has gone wrong"
     }
