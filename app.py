@@ -6,7 +6,7 @@ from flask import redirect, session, url_for
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 app = Flask(__name__)
@@ -41,6 +41,8 @@ def schedule():
 
     try:
         events = parse_prompt(contextual_prompt)
+        if isinstance(events, dict):
+            events= [events]
 
         # Check for OAuth credentials
         creds_data = session.get("credentials")
@@ -54,8 +56,9 @@ def schedule():
 
         for event_data in events:
             summary = event_data.get('summary', 'No summary provided')
-            start = event_data.get('start_time')
-            end = event_data.get('end_time')
+            # accounting for null events
+            start = event_data.get('start_time') or datetime.now().replace(second=0, microsecond=0).isoformat
+            end = event_data.get('end_time') or (start)
 
             event = {
                 "summary": summary,
