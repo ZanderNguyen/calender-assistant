@@ -1,4 +1,5 @@
 from datetime import datetime
+from difflib import SequenceMatcher
 
 def contextualize_prompt(user_prompt):
     now = datetime.now()
@@ -9,3 +10,6 @@ def contextualize_prompt(user_prompt):
         f"Please extract all events from the following prompt with accurate start and end times in ISO 8601 format."
         f"{user_prompt}"
     )
+
+def is_similar(a, b, threshold=0.6):
+    return SequenceMatcher(None, a.lower(), b.lower()).ratio() >= threshold
