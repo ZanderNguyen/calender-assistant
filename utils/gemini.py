@@ -23,7 +23,11 @@ access_token = credentials.token
 PROJECT_ID = os.getenv("GCP_PROJECT_ID")
 GEMINI_ENDPOINT = f"https://us-central1-aiplatform.googleapis.com/v1/projects/{PROJECT_ID}/locations/us-central1/publishers/google/models/gemini-2.5-flash-lite:generateContent"
 
-def parse_prompt(prompt):
+def call_gemini(prompt: str) -> str:
+    """
+    Sends a prompt to Gemini and returns the raw text response.
+    Used for both event extraction and intent classification.
+    """
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
@@ -33,15 +37,7 @@ def parse_prompt(prompt):
         "contents": [
             {
                 "role": "user",
-                "parts": [
-                    {
-                        "text": (
-                            "Extract a calendar event from this prompt. "
-                            "Return JSON with keys: summary, start_time (ISO 8601), end_time (ISO 8601).\n"
-                            f"Prompt: {prompt}"
-                        )
-                    }
-                ]
+                "parts": [{"text": prompt}]
             }
         ],
         "generationConfig": {
@@ -63,20 +59,14 @@ def parse_prompt(prompt):
                 raise ValueError("No text part found in Gemini response")
 
             content = parts[0]["text"]
-            print("Raw Gemini response text:", content)
 
             # Strip Markdown-style code fencing
             cleaned = re.sub(r"^```json\s*|\s*```$", "", content.strip())
-
-            return json.loads(cleaned)
+            return cleaned
 
         except Exception as e:
             print("Parsing error:", e)
     else:
         print(f"Gemini API error ({response.status_code}):", response.text)
 
-    return {
-        "summary": prompt,
-        "start_time": "wallawa",
-        "end_time": "something has gone wrong"
-    }
+    return '{"intent": "unknown", "event": {}}'
