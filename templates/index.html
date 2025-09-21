@@ -5,10 +5,33 @@
 </head>
 <body>
   <h2>Schedule an Event</h2>
-  <form action="/schedule" method="POST">
+  <form action="/action" method="POST">
     <input type="text" name="prompt" placeholder="e.g. Lunch with Sarah next Tuesday at 1pm" required>
     <button type="submit">Submit</button>
   </form>
+  <form action="/clear" method="POST" style="margin-top: 10px;">
+    <button type="submit">🧹 Clear History</button>
+  </form>
+
   <a href="/authorize">Sign in with Google</a>
+
+  {% if response %}
+    <hr>
+    <h3>📋 Latest Response</h3>
+    <div class="response">
+      {{ response|safe }}
+    </div>
+  {% endif %}
+
+
+  {% if history %}
+    <hr>
+    <h3>🕘 Event History</h3>
+    <ul>
+      {% for item in history %}
+        <li>{{ item|safe }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 </body>
 </html>
