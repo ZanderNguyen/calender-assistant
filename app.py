@@ -78,7 +78,7 @@ def handle_action():
 
         session["history"].append(f"<strong>{user_prompt}</strong><br>{html_response}")
 
-        return render_template("index.html", response="html_response", history=session["history"])
+        return render_template("index.html", response=html_response, history=session["history"])
 
     except Exception as e:
         return render_template("index.html", response=f"""

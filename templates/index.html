@@ -2,36 +2,196 @@
 <html>
 <head>
   <title>Calendar Assistant</title>
+  <style>
+    body {
+      background-color: #f5f5f5;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 40px 0 80px;
+    }
+
+    .header {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .subtitle {
+      font-size: 1.2em;
+      color: #666;
+      margin-top: 10px;
+    }
+
+    .actions {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .actions form,
+    .actions a {
+      display: inline-block;
+      margin: 0 10px;
+    }
+
+    .welcome-form {
+      display: flex;
+      justify-content: center;
+      margin-top: 30px;
+      gap: 10px;
+    }
+
+    .welcome-form input[type="text"] {
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 300px;
+    }
+
+    .welcome-form button {
+      padding: 12px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .chat-window {
+      max-width: 800px;
+      margin: 40px auto 20px;
+      padding: 0 20px;
+    }
+
+    .chat {
+      display: flex;
+      margin-bottom: 10px;
+    }
+
+    .user {
+      justify-content: flex-end;
+    }
+
+    .assistant {
+      justify-content: flex-start;
+    }
+
+    .bubble {
+      padding: 12px 18px;
+      border-radius: 20px;
+      max-width: 70%;
+      word-wrap: break-word;
+    }
+
+    .user-bubble {
+      background-color: #d1eaff;
+      color: #000;
+    }
+
+    .assistant-bubble {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+
+    .response {
+      max-width: 800px;
+      margin: 0 auto 20px;
+      padding: 10px;
+      background-color: #fff;
+      border-left: 4px solid #4CAF50;
+    }
+
+    .inline-input {
+      max-width: 800px;
+      margin: 40px auto;
+      display: flex;
+      gap: 10px;
+      padding: 0 20px;
+    }
+
+    .inline-input input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .inline-input button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .welcome-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 80vh;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-  <h2>Schedule an Event</h2>
-  <form action="/action" method="POST">
-    <input type="text" name="prompt" placeholder="e.g. Lunch with Sarah next Tuesday at 1pm" required>
-    <button type="submit">Submit</button>
-  </form>
-  <form action="/clear" method="POST" style="margin-top: 10px;">
-    <button type="submit">🧹 Clear History</button>
-  </form>
 
-  <a href="/authorize">Sign in with Google</a>
+  {% if not history %}
+    <div class="welcome-container">
+      <h1>🧠 Calendar Assistant</h1>
+      <p class="subtitle">How can I help you today?</p>
+      <form action="/action" method="POST" class="welcome-form">
+        <input type="text" name="prompt" placeholder="Type your request..." required>
+        <button type="submit">Send</button>
+      </form>
+      <div class="actions">
+        <form action="/clear" method="POST">
+          <button type="submit">🧹 Clear History</button>
+        </form>
+        <a href="/authorize">🔐 Sign in with Google</a>
+      </div>
+    </div>
+  {% endif %}
 
   {% if response %}
-    <hr>
-    <h3>📋 Latest Response</h3>
     <div class="response">
       {{ response|safe }}
     </div>
   {% endif %}
 
-
   {% if history %}
-    <hr>
-    <h3>🕘 Event History</h3>
-    <ul>
+    <div class="header">
+      <h1>🧠 Calendar Assistant</h1>
+      <p class="subtitle">Here’s what we’ve done so far:</p>
+    </div>
+
+    <div class="actions">
+      <form action="/clear" method="POST">
+        <button type="submit">🧹 Clear History</button>
+      </form>
+      <a href="/authorize">🔐 Sign in with Google</a>
+    </div>
+
+    <div class="chat-window">
       {% for item in history %}
-        <li>{{ item|safe }}</li>
+        {% set parts = item.split('<br>', 1) %}
+        <div class="chat user">
+          <div class="bubble user-bubble">{{ parts[0]|safe }}</div>
+        </div>
+        <div class="chat assistant">
+          <div class="bubble assistant-bubble">{{ parts[1]|safe }}</div>
+        </div>
       {% endfor %}
-    </ul>
+    </div>
+
+    <form action="/action" method="POST" class="inline-input">
+      <input type="text" name="prompt" placeholder="Type your request..." required>
+      <button type="submit">Send</button>
+    </form>
   {% endif %}
+
 </body>
 </html>
