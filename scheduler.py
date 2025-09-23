@@ -60,7 +60,6 @@ def schedule_events(events, service):
     return f"""
         <h3>Events Created!</h3>
         {''.join(results)}
-        <a href="/">Back</a>
     """
 
 def edit_event(event_data, service):
@@ -73,10 +72,10 @@ def edit_event(event_data, service):
     event = find_event_by_summary_and_date(service, summary, target_date)
     if not event:
         print(f"⚠️ No matching event found for '{summary}' on {target_date}")
-        return f"<p>No matching event found for '{summary}' on {target_date}</p><a href='/'>Back</a>"
+        return f"<p>No matching event found for '{summary}' on {target_date}</p>"
     print("Original event:", json.dumps(event, indent=2))
     if not event:
-        return f"<p>No matching event found for '{summary}' on {target_date}</p><a href='/'>Back</a>"
+        return f"<p>No matching event found for '{summary}' on {target_date}</p>"
 
     event_id = event["id"]
 
@@ -111,11 +110,10 @@ def edit_event(event_data, service):
             <p><strong>{updated['summary']}</strong><br>
             {updated['start']['dateTime']} → {updated['end']['dateTime']}<br>
             <a href="{updated.get('htmlLink')}" target="_blank">View in Calendar</a></p>
-            <a href="/">Back</a>
         """
     except Exception as e:
         print("⚠️ Calendar update failed:", e)
-        return f"<p>Failed to update event: {str(e)}</p><a href='/'>Back</a>"
+        return f"<p>Failed to update event: {str(e)}"
 
 
 def delete_event(event_data, service):
@@ -130,19 +128,19 @@ def delete_event(event_data, service):
         target_date = datetime.fromisoformat(start_time).date()
 
     if not summary:
-        return "<p>Missing summary for deletion.</p><a href='/'>Back</a>"
+        return "<p>Missing summary for deletion.</p>"
 
     event = find_event_by_summary_and_date(service, summary, target_date)
     if not event:
         print(f"⚠️ No matching event found for '{summary}' on {target_date}")
-        return f"<p>No matching event found for '{summary}' on {target_date}</p><a href='/'>Back</a>"
+        return f"<p>No matching event found for '{summary}' on {target_date}</p>"
 
     event_id = event["id"]
 
     try:
         service.events().delete(calendarId="primary", eventId=event_id).execute()
         print(f"🗑️ Deleted event: {summary}")
-        return f"<h3>🗑️ Event Deleted</h3><p><strong>{summary}</strong> was removed.<br><a href='/'>Back</a></p>"
+        return f"<h3>🗑️ Event Deleted</h3><p><strong>{summary}</strong> was removed.<br></p>"
     except Exception as e:
         print("⚠️ Failed to delete event:", e)
-        return f"<p>Failed to delete event: {str(e)}</p><a href='/'>Back</a>"
+        return f"<p>Failed to delete event: {str(e)}</p>"
