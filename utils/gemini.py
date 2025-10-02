@@ -42,7 +42,7 @@ def call_gemini(prompt: str) -> str:
         ],
         "generationConfig": {
             "temperature": 0.3,
-            "maxOutputTokens": 512
+            "maxOutputTokens": 2048
         }
     }
 
@@ -61,7 +61,9 @@ def call_gemini(prompt: str) -> str:
             content = parts[0]["text"]
 
             # Strip Markdown-style code fencing
-            cleaned = re.sub(r"^```json\s*|\s*```$", "", content.strip())
+            cleaned = re.sub(r"^```(?:json)?\s*", "", content.strip(), flags=re.IGNORECASE | re.MULTILINE)
+            cleaned = re.sub(r"```$", "", cleaned, flags=re.MULTILINE)
+
             return cleaned
 
         except Exception as e:
