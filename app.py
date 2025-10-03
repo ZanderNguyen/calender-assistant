@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, jsonify
 from flask_session import Session
 from utils.gemini import call_gemini
 from utils.helpers import contextualize_prompt
@@ -78,9 +78,21 @@ def handle_action():
 
         session["history"].append(f"<strong>{user_prompt}</strong><br>{html_response}")
 
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({
+                "prompt_html": f"<strong>{user_prompt}</strong>",
+                "response_html": html_response
+            })
+
         return render_template("index.html", response=html_response, history=session["history"])
 
     except Exception as e:
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return jsonify({
+                "error": "Something went wrong while processing your request.",
+                "details": str(e)
+            }), 500
+
         return render_template("index.html", response=f"""
             <h3>⚠️ Something went wrong</h3>
             <p>{str(e)}</p>

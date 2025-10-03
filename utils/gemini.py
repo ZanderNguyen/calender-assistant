@@ -28,6 +28,8 @@ def call_gemini(prompt: str) -> str:
     Sends a prompt to Gemini and returns the raw text response.
     Used for both event extraction and intent classification.
     """
+    credentials.refresh(Request())
+    access_token = credentials.token
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
